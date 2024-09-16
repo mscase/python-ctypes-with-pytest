@@ -3,6 +3,8 @@
 from ctiff.ctiff import *
 from ctiff.easytif import *
 
+# first working with the ctiff class
+
 TIF = ctiff()
 print(TIF)
 
@@ -17,6 +19,9 @@ try:
 except Exception as e:
     print (e)
 TIF.TiffClose(htiff)
+
+# working with easytif class
+# its a bit easier to use than the ctiff class
 
 img = TIF.TiffOpen(b'image.tiff', b'r')
 easytif = EasyTif(TIF, img)
