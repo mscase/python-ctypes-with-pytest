@@ -12,6 +12,8 @@ TIFFTAG_BITSPERSAMPLE    = 258
 TIFFTAG_ORIENTATION	     = 274
 TIFFTAG_PLANARCONFIG     = 284
 TIFFTAG_IMAGEDESCRIPTION = 270
+TIFFTAG_SOFTWARE         = 305
+TIFFTAG_HOSTCOMPUTER     = 316
 
 TiffTags = {
     TIFFTAG_IMAGEWIDTH: 'TIFFTAG_IMAGEWIDTH',
@@ -21,6 +23,8 @@ TiffTags = {
     TIFFTAG_ORIENTATION: 'TIFFTAG_ORIENTATION',
     TIFFTAG_PLANARCONFIG: 'TIFFTAG_PLANARCONFIG',
     TIFFTAG_IMAGEDESCRIPTION: 'TIFFTAG_IMAGEDESCRIPTION',
+    TIFFTAG_SOFTWARE: 'TIFFTAG_SOFTWARE',
+    TIFFTAG_HOSTCOMPUTER: 'TIFFTAG_HOSTCOMPUTER',
 }
 
 def GetTiffTagId(ttag):
@@ -37,6 +41,8 @@ TiffTags2 = {
     'TIFFTAG_ORIENTATION': TIFFTAG_ORIENTATION,
     'TIFFTAG_PLANARCONFIG': TIFFTAG_PLANARCONFIG,
     'TIFFTAG_IMAGEDESCRIPTION': TIFFTAG_IMAGEDESCRIPTION,
+    'TIFFTAG_SOFTWARE': TIFFTAG_SOFTWARE,
+    'TIFFTAG_HOSTCOMPUTER': TIFFTAG_HOSTCOMPUTER,
 }
 
 class TIFF(C.Structure):
@@ -168,9 +174,11 @@ def InitLibFunctionSignatures(lib):
     lib.TIFFClose.restype = None
     lib.TIFFGetVersion.argtypes = []
     lib.TIFFGetVersion.restype = C.c_char_p
+    # field info
     lib.TIFFGetField.argtypes = [pTIFF, TTAG_T, C.c_void_p]
     lib.TIFFGetField.restype = C.c_int
-    # field info
+    lib.TIFFSetField.argtypes = [pTIFF, TTAG_T, C.c_void_p]
+    lib.TIFFSetField.restype = C.c_int
     lib.TIFFFieldWithTag.argtypes = [pTIFF, TTAG_T]
     lib.TIFFFieldWithTag.restype = C.POINTER(TIFFField)
     lib.TIFFFieldName.argtypes = [C.POINTER(TIFFField)]
@@ -248,6 +256,18 @@ class DynamicLibrary:
         else:
             raise ValueError(f'Failed to get value for [{TiffTags[ttag]}]')
 
+    def TIFFSetField(self, tiffobj, ttag, value):
+        field_info = self.lib.TIFFFieldWithTag(tiffobj, ttag)
+        data_type = self.lib.TIFFFieldDataType(field_info).value
+        if data_type == TIFFDataType.TIFF_ASCII:
+            newvalue = C.c_char_p(value.encode('utf-8'))
+            try:
+                res = self.lib.TIFFSetField(tiffobj, ttag, newvalue)
+            except TypeError:
+                raise
+        else:
+            raise ValueError(f'unsupported data_type')
+        
 class ctiff:
     def __init__(self):
         self.lib = DynamicLibrary()

@@ -43,6 +43,16 @@ def test_get_field_value_and_getattr(tiff_api, tiff_handle):
             print(f'Caught AttributeError for {tag_name}: {e}')
     easy_tif.Close()
 
+
+@pytest.mark.easytif
+def test_set_field_value_and_setattr(tiff_api, tiff_handle):
+    easy_tif = EasyTif(tiff_api, tiff_handle)
+    easy_tif.SetFieldValue(TIFFTAG_HOSTCOMPUTER, 'testvalue1')
+    assert easy_tif.hostcomputer == b'testvalue1'
+    easy_tif.hostcomputer = 'testvalue2'
+    assert easy_tif.hostcomputer == b'testvalue2'
+    easy_tif.Close()
+
 @pytest.mark.easytif
 def test_getattr_known_values(tiff_api, tiff_handle):
     easy_tif = EasyTif(tiff_api, tiff_handle)

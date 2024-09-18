@@ -80,3 +80,13 @@ def test_tiff_tags_match():
     # Ensure both dictionaries have the same values
     for key, value in TiffTags.items():
         assert TiffTags2[value] == key, f'Value mismatch for key {key}: {TiffTags2[value]} != {key}'
+
+@pytest.mark.ctiff
+def test_tiff_set_field(tiff_api, tiff_handle):
+    tiff_api.lib.TIFFSetField(tiff_handle, TIFFTAG_HOSTCOMPUTER, 'host-computer') 
+    host_computer = tiff_api.lib.TIFFGetField(tiff_handle, TIFFTAG_HOSTCOMPUTER)
+    assert host_computer == b'host-computer'
+    tiff_api.lib.TIFFSetField(tiff_handle, TIFFTAG_HOSTCOMPUTER, 'computer-host') 
+    computer_host = tiff_api.lib.TIFFGetField(tiff_handle, TIFFTAG_HOSTCOMPUTER)
+    assert computer_host == b'computer-host'
+
